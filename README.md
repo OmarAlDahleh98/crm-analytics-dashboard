@@ -1,6 +1,6 @@
 # CRM 360 — Sales & Customer Analytics Dashboard
 
-An end-to-end CRM analytics portfolio project built to demonstrate how raw customer and sales data can be transformed into actionable business intelligence.
+An end-to-end CRM analytics portfolio project built to demonstrate how customer and sales data can be transformed into actionable business intelligence.
 
 **Workflow:** Raw CRM Data → Python Data Cleaning → EDA → Dimensional Model → DAX → Power BI Dashboard
 
@@ -30,6 +30,8 @@ The project analyzes customer and lead performance across the sales funnel, reve
 | Average Lead Score | 59.4 |
 | Average Response Time | 11.2 hours |
 | Average Customer Satisfaction | 7.37 / 10 |
+
+> **Note:** These KPIs represent the dataset-wide analytical snapshot. Dashboard visuals may change with the selected reporting period and filters.
 
 ## Dashboard Preview
 
@@ -93,15 +95,24 @@ crm-analytics-dashboard/
 │   ├── CRM_360_Sales_Marketing.png
 │   ├── CRM_360_Customer_Lead_Insights.png
 │   └── CRM_360_Data_Model.png
+├── requirements.txt
 ├── .gitignore
 └── README.md
 ```
+
+## How to Use
+
+1. Review `Data/CRM_Cleaned_Public.csv` to understand the analytical dataset.
+2. Open the Python notebooks in sequence to review the cleaning and EDA workflow.
+3. Open the PBIX file in Power BI Desktop to explore the interactive dashboard, filters, and data model.
+4. Review the DAX files to understand the KPI and custom-visual calculations.
+5. Read `Documentation/Business_Insights.md` for the main analytical conclusions and recommended actions.
 
 ## Data Preparation
 
 The cleaning workflow covers profiling, missing-value assessment, duplicate detection and resolution, data-type correction, date validation, category/text standardization, invalid-value correction, logical validation, derived fields, and export of the analytical dataset.
 
-The public CSV excludes direct customer identity and contact fields. It is intended for portfolio demonstration rather than production CRM use.
+The public CSV is based on a publicly available CRM dataset and is included for portfolio analysis and demonstration.
 
 ## Data Model
 
@@ -117,9 +128,9 @@ The PBIX file contains the interactive dashboard, filters, model, measures, and 
 
 The notebooks document the analytical workflow used before and alongside Power BI, including data cleaning, customer and lead analysis, funnel conversion, revenue analysis, sales-representative performance, marketing-source analysis, satisfaction, response time, segmentation, and business insights.
 
-## Public Data Notice
+## Public Dataset
 
-Only the cleaned public-safe dataset is published. Direct identity/contact fields such as names, emails, and phone numbers are excluded from the repository dataset.
+The project uses a publicly available CRM dataset. The repository includes a cleaned analytical version suitable for portfolio demonstration.
 
 ## Project Outcome
 
