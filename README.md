@@ -31,6 +31,24 @@ The project analyzes customer and lead performance across the sales funnel, reve
 | Average Response Time | 11.2 hours |
 | Average Customer Satisfaction | 7.37 / 10 |
 
+## Dashboard Preview
+
+### CRM Overview
+
+![CRM 360 Overview](Screenshots/CRM_360_Overview.png)
+
+### Sales & Marketing Performance
+
+![CRM 360 Sales & Marketing](Screenshots/CRM_360_Sales_Marketing.png)
+
+### Customer & Lead Insights
+
+![CRM 360 Customer & Lead Insights](Screenshots/CRM_360_Customer_Lead_Insights.png)
+
+### Power BI Data Model
+
+![CRM 360 Data Model](Screenshots/CRM_360_Data_Model.png)
+
 ## Technical Stack
 
 **Analytics & Data Preparation**
@@ -70,6 +88,11 @@ crm-analytics-dashboard/
 ├── Documentation/
 │   ├── Project_Roadmap.md
 │   └── Business_Insights.md
+├── Screenshots/
+│   ├── CRM_360_Overview.png
+│   ├── CRM_360_Sales_Marketing.png
+│   ├── CRM_360_Customer_Lead_Insights.png
+│   └── CRM_360_Data_Model.png
 ├── .gitignore
 └── README.md
 ```
