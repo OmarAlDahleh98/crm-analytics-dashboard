@@ -1,0 +1,145 @@
+// CRM Analytics Dashboard - Core DAX Measures
+// Extracted from the Power BI model using INFO.MEASURES().
+
+Active Customer % =
+DIVIDE([Active Customers], [Total Customers], 0)
+
+Active Customers =
+CALCULATE([Total Customers], CRM_Final[Customer_Status] = "Active")
+
+Average CSAT Label =
+FORMAT(DIVIDE([Average Customer Satisfaction], 2), "0.0") & " / 5"
+
+Average Customer Satisfaction =
+AVERAGE(CRM_Final[Customer_Satisfaction])
+
+Average Lead Score =
+AVERAGE(CRM_Final[Lead_Score])
+
+Average Response Time =
+AVERAGE(CRM_Final[Response_Time_Hours])
+
+Average Response Time Label =
+FORMAT([Average Response Time], "0.0") & " h"
+
+Average Revenue =
+AVERAGE(CRM_Final[Revenue])
+
+Avg Response Time Change % =
+DIVIDE([Average Response Time] - [Avg Response Time Previous Period], [Avg Response Time Previous Period], 0)
+
+Avg Response Time Change Label =
+VAR Change = [Avg Response Time Change %]
+VAR Arrow = IF(Change < 0, "↓", "↑")
+RETURN Arrow & " " & FORMAT(ABS(Change), "0%")
+
+Avg Response Time Previous Period =
+CALCULATE([Average Response Time], DATEADD(Dim_Date[Date], -1, YEAR))
+
+Conversion Rate =
+DIVIDE([Won Leads], [Total Leads], 0)
+
+Conversion Rate by Score =
+DIVIDE([Won Leads], [Total Leads], 0)
+
+CSAT Change % =
+VAR CurrentCSAT = [Average Customer Satisfaction]
+VAR PreviousCSAT = CALCULATE([Average Customer Satisfaction], DATEADD(Dim_Date[Date], -1, YEAR))
+RETURN DIVIDE(CurrentCSAT - PreviousCSAT, PreviousCSAT, 0)
+
+CSAT Change Label =
+VAR Change = [CSAT Change %]
+VAR Arrow = IF(Change >= 0, "↑", "↓")
+RETURN Arrow & " " & FORMAT(ABS(Change), "0.0%")
+
+CSAT Stars =
+VAR Score = ROUND(DIVIDE([Average Customer Satisfaction], 2), 0)
+RETURN REPT("★", Score) & REPT("☆", 5 - Score)
+
+Funnel Value =
+SWITCH(
+    SELECTEDVALUE('Funnel Stages'[Stage]),
+    "Total Leads", [Total Leads],
+    "Qualified", CALCULATE([Total Leads], CRM_Final[Lead_Stage] = "Qualified"),
+    "Proposal", CALCULATE([Total Leads], CRM_Final[Lead_Stage] = "Proposal"),
+    "Negotiation", CALCULATE([Total Leads], CRM_Final[Lead_Stage] = "Negotiation"),
+    "Won", CALCULATE([Total Leads], CRM_Final[Lead_Stage] = "Won")
+)
+
+High Score Leads =
+CALCULATE([Total Leads], CRM_Final[Lead_Score] >= 61, CRM_Final[Lead_Score] <= 80)
+
+Lost Leads =
+CALCULATE(COUNTROWS(CRM_Final), CRM_Final[Lead_Stage] = "Lost")
+
+Lost Rate =
+DIVIDE([Lost Leads], [Total Leads], 0)
+
+Pipeline Leads =
+CALCULATE(COUNTROWS(CRM_Final), CRM_Final[Lead_Stage] <> "Won", CRM_Final[Lead_Stage] <> "Lost")
+
+Pipeline Revenue =
+CALCULATE([Total Revenue], CRM_Final[Lead_Stage] <> "Won", CRM_Final[Lead_Stage] <> "Lost")
+
+Pipeline Revenue % =
+DIVIDE([Pipeline Revenue], [Total Revenue], 0)
+
+Remaining Conversion Rate =
+1 - [Conversion Rate]
+
+Revenue Growth % =
+VAR CurrentRevenue = [Total Revenue]
+VAR PreviousRevenue = CALCULATE([Total Revenue], DATEADD(Dim_Date[Date], -1, YEAR))
+RETURN DIVIDE(CurrentRevenue - PreviousRevenue, PreviousRevenue, 0)
+
+Revenue Growth Color =
+IF([Revenue Growth %] >= 0, "#AD5129", "#D9D9D9")
+
+Revenue Growth Label =
+"▲ " & FORMAT([Revenue Growth %], "0.0%") & " vs Previous Year"
+
+Revenue per Won Lead =
+DIVIDE([Won Revenue], [Won Leads], 0)
+
+Score Band Leads =
+VAR SelectedBand = SELECTEDVALUE('Score Band'[Band])
+RETURN
+SWITCH(
+    SelectedBand,
+    "Low", CALCULATE([Total Leads], FILTER(ALL(CRM_Final[Lead_Score_Band]), CONTAINSSTRING(CRM_Final[Lead_Score_Band], "Low"))),
+    "Medium", CALCULATE([Total Leads], FILTER(ALL(CRM_Final[Lead_Score_Band]), CONTAINSSTRING(CRM_Final[Lead_Score_Band], "Medium"))),
+    "High", CALCULATE([Total Leads], FILTER(ALL(CRM_Final[Lead_Score_Band]), CONTAINSSTRING(CRM_Final[Lead_Score_Band], "High") && NOT CONTAINSSTRING(CRM_Final[Lead_Score_Band], "Very High"))),
+    "Very High", CALCULATE([Total Leads], FILTER(ALL(CRM_Final[Lead_Score_Band]), CONTAINSSTRING(CRM_Final[Lead_Score_Band], "Very High"))),
+    0
+)
+
+Selected Score Conversion Rate =
+DIVIDE([Won Leads], [Total Leads], 0)
+
+Total Customers =
+DISTINCTCOUNT(CRM_Final[Customer_ID])
+
+Total Leads =
+COUNTROWS(CRM_Final)
+
+Total Revenue =
+SUM(CRM_Final[Revenue])
+
+Very High Score Conversion Rate =
+DIVIDE(
+    CALCULATE([Won Leads], CRM_Final[Lead_Score] >= 81, CRM_Final[Lead_Score] <= 100),
+    [Very High Score Leads],
+    0
+)
+
+Very High Score Leads =
+CALCULATE([Total Leads], CRM_Final[Lead_Score] >= 81, CRM_Final[Lead_Score] <= 100)
+
+Won Leads =
+CALCULATE(COUNTROWS(CRM_Final), CRM_Final[Is_Won] = TRUE())
+
+Won Revenue =
+CALCULATE([Total Revenue], CRM_Final[Is_Won] = TRUE())
+
+Won Revenue % =
+DIVIDE([Won Revenue], [Total Revenue], 0)
