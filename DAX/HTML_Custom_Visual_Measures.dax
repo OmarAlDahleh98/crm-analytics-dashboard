@@ -1,0 +1,127 @@
+// CRM Analytics Dashboard - HTML / Custom Visual DAX Measures
+// Extracted from the Power BI model using INFO.MEASURES().
+
+Average Response Time Columns HTML =
+VAR MonthTable =
+    TOPN(
+        5,
+        ADDCOLUMNS(
+            VALUES(Dim_Date[Month]),
+            "ResponseValue", CALCULATE([Average Response Time])
+        ),
+        [ResponseValue], DESC
+    )
+VAR MaxResponse = MAXX(MonthTable, [ResponseValue])
+VAR MonthRows =
+    CONCATENATEX(
+        MonthTable,
+        VAR ResponseValue = [ResponseValue]
+        VAR BarHeight = IF(MaxResponse > 0, DIVIDE(ResponseValue, MaxResponse) * 105, 0)
+        RETURN
+            "<div style='display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:32px;height:115px;'>" &
+            "<div style='width:18px;height:" & FORMAT(BarHeight, "0") & "px;background:#AD5129;border-radius:4px 4px 0 0;'></div>" &
+            "<div style='width:100%;border-bottom:1px solid #4A4A4A;'></div></div>",
+        ""
+    )
+RETURN
+    "<div style='width:100%;height:100%;display:flex;align-items:flex-end;justify-content:space-evenly;background:rgba(0,0,0,0);padding:8px 4px;box-sizing:border-box;'>" & MonthRows & "</div>"
+
+Conversion Rate by Score HTML =
+VAR Bands =
+    ADDCOLUMNS(VALUES('Score Band'[Band]), "CRValue", CALCULATE([Conversion Rate by Score]))
+VAR MaxCR = MAXX(Bands, [CRValue])
+RETURN
+    "<div style='width:100%;height:100%;display:flex;align-items:center;justify-content:space-evenly;gap:14px;padding:8px;background:rgba(0,0,0,0);box-sizing:border-box;font-family:Segoe UI;'>" &
+    CONCATENATEX(
+        Bands,
+        VAR ThisBand = [Band]
+        VAR ThisCR = [CRValue]
+        VAR CRPercent = MIN(1, MAX(0, ThisCR))
+        VAR ThisColor = SWITCH(ThisBand, "Low", "#F0A27A", "Medium", "#D97950", "High", "#C45F3A", "Very High", "#AD5129", "#AD5129")
+        RETURN
+            "<div style='width:90px;text-align:center;'><div style='width:70px;height:70px;margin:0 auto 7px auto;border-radius:50%;background:conic-gradient(" & ThisColor & " " & FORMAT(CRPercent * 100, "0.0") & "%,#4A4A4A 0);position:relative;'><div style='position:absolute;top:6px;left:6px;right:6px;bottom:6px;border-radius:50%;background:#333333;display:flex;align-items:center;justify-content:center;color:#F2F2F2;font-size:11px;font-weight:600;'>" & FORMAT(ThisCR, "0.0%") & "</div></div><div style='color:#F2F2F2;font-size:11px;font-weight:600;'>" & ThisBand & "</div></div>",
+        ""
+    ) &
+    "</div>"
+
+Industry Performance HTML =
+VAR IndustryRows =
+    CONCATENATEX(
+        VALUES(CRM_Final[Industry]),
+        VAR IndustryName = CALCULATE(SELECTEDVALUE(CRM_Final[Industry]))
+        VAR RevenueValue = CALCULATE([Won Revenue])
+        VAR ConversionValue = CALCULATE([Conversion Rate])
+        VAR BarWidth = MIN(100, MAX(0, ConversionValue * 100))
+        VAR RevenueText =
+            SWITCH(
+                TRUE(),
+                ABS(RevenueValue) >= 1000000, "$" & FORMAT(RevenueValue / 1000000, "0.0") & "M",
+                ABS(RevenueValue) >= 1000, "$" & FORMAT(RevenueValue / 1000, "0.0") & "K",
+                "$" & FORMAT(RevenueValue, "#,##0")
+            )
+        VAR ConversionText = FORMAT(ConversionValue, "0%")
+        RETURN
+            "<div style='width:100%;margin-bottom:16px;font-family:Segoe UI;'><div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'><span style='color:#F2F2F2;font-size:13px;font-weight:500;'>" & IndustryName & "</span><span style='color:#F2F2F2;font-size:12px;white-space:nowrap;'>Rev: " & RevenueText & "&nbsp;&nbsp;<span style='color:#AD5129;font-weight:600;'>" & ConversionText & " CR</span></span></div><div style='width:100%;height:7px;background:#4A4A4A;border-radius:6px;overflow:hidden;'><div style='width:" & FORMAT(BarWidth, "0") & "%;height:100%;background:#AD5129;border-radius:6px;'></div></div></div>",
+        "",
+        CRM_Final[Industry], ASC
+    )
+RETURN
+    "<div style='width:100%;min-height:100%;padding:12px 10px;background:rgba(0,0,0,0);border-radius:10px;box-sizing:border-box;'>" & IndustryRows & "</div>"
+
+Lead Score Distribution HTML =
+VAR Bands =
+    ADDCOLUMNS(
+        VALUES('Score Band'[Band]),
+        "LeadCount", CALCULATE([Score Band Leads]),
+        "BandSort", CALCULATE(MAX('Score Band'[Sort]))
+    )
+VAR MaxLeads = MAXX(Bands, [LeadCount])
+RETURN
+    "<div style='width:100%;height:100%;display:flex;align-items:center;justify-content:space-evenly;gap:14px;padding:10px;background:rgba(0,0,0,0);box-sizing:border-box;font-family:Segoe UI;'>" &
+    CONCATENATEX(
+        Bands,
+        VAR BandName = [Band]
+        VAR LeadCount = [LeadCount]
+        VAR BandSort = [BandSort]
+        VAR PercentOfMax = DIVIDE(LeadCount, MaxLeads, 0)
+        VAR BandColor = SWITCH(BandName, "Low", "#F0A27A", "Medium", "#D97950", "High", "#C45F3A", "Very High", "#AD5129", "#AD5129")
+        VAR LeadText = FORMAT(LeadCount, "#,##0")
+        RETURN
+            "<div style='width:78px;text-align:center;color:#F2F2F2;'><div style='width:60px;height:60px;margin:0 auto 8px auto;border-radius:50%;background:#4A4A4A;position:relative;overflow:hidden;'><div style='position:absolute;left:0;bottom:0;width:100%;height:" & FORMAT(PercentOfMax * 100, "0") & "%;background:" & BandColor & ";'></div><div style='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#F2F2F2;font-size:10px;font-weight:600;'>" & LeadText & "</div></div><div style='font-size:11px;font-weight:600;margin-top:4px;'>" & BandName & "</div></div>",
+        "",
+        [BandSort], ASC
+    ) &
+    "</div>"
+
+Response Time by Stage HTML =
+VAR StageRows =
+    CONCATENATEX(
+        VALUES(CRM_Final[Lead_Stage]),
+        VAR StageName = CALCULATE(SELECTEDVALUE(CRM_Final[Lead_Stage]))
+        VAR ResponseValue = CALCULATE([Average Response Time])
+        VAR MaxResponse = MAXX(ALL(CRM_Final[Lead_Stage]), CALCULATE([Average Response Time]))
+        VAR BarWidth = IF(MaxResponse > 0, DIVIDE(ResponseValue, MaxResponse) * 100, 0)
+        VAR ResponseText = FORMAT(ResponseValue, "0.0") & " h"
+        RETURN
+            "<div style='width:100%;margin-bottom:16px;font-family:Segoe UI;'><div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'><span style='color:#F2F2F2;font-size:13px;font-weight:500;'>" & StageName & "</span><span style='color:#F2F2F2;font-size:12px;font-weight:600;'>" & ResponseText & "</span></div><div style='width:100%;height:7px;background:#4A4A4A;border-radius:8px;overflow:hidden;'><div style='width:" & FORMAT(BarWidth, "0") & "%;height:100%;background:#AD5129;border-radius:8px;'></div></div></div>",
+        "",
+        CRM_Final[Lead_Stage], ASC
+    )
+RETURN
+    "<div style='width:100%;min-height:100%;padding:12px 10px;background:rgba(0,0,0,0);border-radius:10px;box-sizing:border-box;'>" & StageRows & "</div>"
+
+Satisfaction by Status HTML =
+VAR StatusRows =
+    CONCATENATEX(
+        VALUES(Dim_Customer[Customer_Status]),
+        VAR StatusName = CALCULATE(SELECTEDVALUE(Dim_Customer[Customer_Status]))
+        VAR CSATValue = DIVIDE(CALCULATE([Average Customer Satisfaction]), 2)
+        VAR BarWidth = MIN(100, MAX(0, DIVIDE(CSATValue, 5) * 100))
+        VAR CSATText = FORMAT(CSATValue, "0.0") & " / 5"
+        RETURN
+            "<div style='width:100%;margin-bottom:16px;font-family:Segoe UI;'><div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;'><span style='color:#F2F2F2;font-size:13px;font-weight:500;'>" & StatusName & "</span><span style='color:#F2F2F2;font-size:12px;font-weight:600;'>" & CSATText & "</span></div><div style='width:100%;height:7px;background:#4A4A4A;border-radius:8px;overflow:hidden;'><div style='width:" & FORMAT(BarWidth, "0") & "%;height:100%;background:#AD5129;border-radius:8px;'></div></div></div>",
+        "",
+        Dim_Customer[Customer_Status], ASC
+    )
+RETURN
+    "<div style='width:100%;min-height:100%;padding:12px 10px;background:rgba(0,0,0,0);border-radius:10px;box-sizing:border-box;'>" & StatusRows & "</div>"
